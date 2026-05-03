@@ -1,0 +1,540 @@
+const app = {
+    state: {
+        currentPage: 'home',
+        selectedService: null,
+        selectedLocation: null,
+        selectedStylist: null,
+        selectedDate: null,
+        selectedTime: null,
+        bookings: [
+            {
+                id: 1,
+                service: 'Eyelash Extension',
+                stylist: 'Salsa',
+                location: 'Ke Salon',
+                date: '5 Mei 2026',
+                time: '14:00',
+                price: 280000,
+                status: 'done'
+            },
+            {
+                id: 2,
+                service: 'Nail Art Premium',
+                stylist: 'Nadia',
+                location: 'Home Service',
+                date: '10 Mei 2026',
+                time: '10:00',
+                price: 320000,
+                status: 'waiting'
+            }
+        ],
+        favorites: [1, 3],
+        chatMessages: [],
+        deferredPrompt: null
+    },
+
+    data: {
+        services: {
+            brow: {
+                name: 'Brow Bomber',
+                icon: '👁️',
+                items: [
+                    { id: 'b1', name: 'Brow Shaping', price: 80000, duration: '30 min', desc: 'Pengeritingan alis natural' },
+                    { id: 'b2', name: 'Brow Bomber', price: 150000, duration: '45 min', desc: 'Lamination alis + tint' },
+                    { id: 'b3', name: 'Brow Tint', price: 60000, duration: '20 min', desc: 'Pewarnaan alis' }
+                ]
+            },
+            eyelash: {
+                name: 'Eyelash Extension',
+                icon: '✨',
+                items: [
+                    { id: 'e1', name: 'Natural Classic', price: 200000, duration: '90 min', desc: 'Bulu mata natural' },
+                    { id: 'e2', name: 'Volume Glam', price: 280000, duration: '120 min', desc: 'Volume tebal glamour' },
+                    { id: 'e3', name: 'Hybrid Mix', price: 250000, duration: '105 min', desc: 'Kombinasi classic & volume' }
+                ]
+            },
+            nail: {
+                name: 'Nail Art',
+                icon: '💅',
+                items: [
+                    { id: 'n1', name: 'Basic Nail Art', price: 120000, duration: '60 min', desc: 'Desain sederhana' },
+                    { id: 'n2', name: 'Premium Design', price: 200000, duration: '90 min', desc: 'Desain kompleks + rhinestone' },
+                    { id: 'n3', name: 'Custom Design', price: 250000, duration: '120 min', desc: 'Desain sesuai request' }
+                ]
+            },
+            hair: {
+                name: 'Hair Treatment',
+                icon: '💇‍♀️',
+                items: [
+                    { id: 'h1', name: 'Hair Spa', price: 150000, duration: '60 min', desc: 'Perawatan rambut' },
+                    { id: 'h2', name: 'Hair Coloring', price: 350000, duration: '180 min', desc: 'Pewarnaan rambut' },
+                    { id: 'h3', name: 'Hair Cut + Styling', price: 100000, duration: '45 min', desc: 'Potong & styling' }
+                ]
+            }
+        },
+
+        stylists: [
+            { id: 1, name: 'Nadia', role: 'Nail Artist', rating: 4.9, exp: '5 tahun', spec: 'nail', avatar: '👩‍🎨' },
+            { id: 2, name: 'Salsa', role: 'Lash Expert', rating: 5.0, exp: '4 tahun', spec: 'eyelash', avatar: '👩‍🔬' },
+            { id: 3, name: 'Rina', role: 'Brow Specialist', rating: 4.8, exp: '6 tahun', spec: 'brow', avatar: '👩‍🏫' },
+            { id: 4, name: 'Maya', role: 'Hair Stylist', rating: 4.7, exp: '3 tahun', spec: 'hair', avatar: '💇‍♀️' },
+            { id: 5, name: 'Dewi', role: 'All-Rounder', rating: 4.9, exp: '7 tahun', spec: 'all', avatar: '👸' }
+        ],
+
+        inspirations: [
+            { id: 1, category: 'nail', name: 'Korean Gel Nail', emoji: '💅', color: 'linear-gradient(135deg, #FFEAA7, #FAB1A0)' },
+            { id: 2, category: 'eyelash', name: 'Fox Eye Lash', emoji: '✨', color: 'linear-gradient(135deg, #A29BFE, #6C5CE7)' },
+            { id: 3, category: 'hair', name: 'Butterfly Cut', emoji: '🦋', color: 'linear-gradient(135deg, #FD79A8, #E84393)' },
+            { id: 4, category: 'nail', name: 'French Tips', emoji: '🤍', color: 'linear-gradient(135deg, #DFE6E9, #B2BEC3)' },
+            { id: 5, category: 'eyelash', name: 'Cat Eye Volume', emoji: '🐱', color: 'linear-gradient(135deg, #00B894, #00CEC9)' },
+            { id: 6, category: 'hair', name: 'Balayage', emoji: '🌅', color: 'linear-gradient(135deg, #FDCB6E, #E17055)' }
+        ]
+    },
+
+    init() {
+        this.renderRecommendations();
+        this.renderFavoriteStylists();
+        this.renderLookbook();
+        this.renderBookings();
+        this.setupPWA();
+        this.generateDates();
+        this.generateTimes();
+    },
+
+    navigate(page, params = {}) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(`page-${page}`)?.classList.add('active');
+        
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        const navMap = { home: 0, inspiration: 1, chat: 3, profile: 4 };
+        if (navMap[page] !== undefined) {
+            document.querySelectorAll('.nav-item')[navMap[page]].classList.add('active');
+        }
+
+        this.state.currentPage = page;
+
+        if (page === 'service-detail' && params.category) {
+            this.renderServiceDetail(params.category);
+        }
+        
+        window.scrollTo(0, 0);
+    },
+
+    // HOME
+    renderRecommendations() {
+        const container = document.getElementById('recommendations');
+        const recs = [
+            { name: 'Korean Glass Nails', emoji: '💅', color: 'linear-gradient(135deg, #FFEAA7, #FAB1A0)' },
+            { name: 'Wispy Lash Look', emoji: '✨', color: 'linear-gradient(135deg, #A29BFE, #6C5CE7)' },
+            { name: 'Soft Glam Brow', emoji: '👁️', color: 'linear-gradient(135deg, #FD79A8, #E84393)' }
+        ];
+        
+        container.innerHTML = recs.map(r => `
+            <div class="rec-card" onclick="app.navigate('service-detail', {category: 'nail'})">
+                <div class="rec-img" style="background: ${r.color};">${r.emoji}</div>
+                <div class="rec-info">
+                    <h4>${r.name}</h4>
+                    <p>Trending minggu ini 🔥</p>
+                </div>
+            </div>
+        `).join('');
+    },
+
+    renderFavoriteStylists() {
+        const container = document.getElementById('favorite-stylists');
+        const favs = this.data.stylists.filter(s => this.state.favorites.includes(s.id));
+        
+        container.innerHTML = favs.map(s => `
+            <div class="stylist-card" onclick="app.navigate('stylist')">
+                <div class="stylist-avatar">${s.avatar}</div>
+                <h4>${s.name}</h4>
+                <div class="rating">⭐ ${s.rating}</div>
+                <div class="spec">${s.role}</div>
+            </div>
+        `).join('');
+    },
+
+    // INSPIRATION
+    renderLookbook(filter = 'all') {
+        const container = document.getElementById('lookbook-grid');
+        const items = filter === 'all' 
+            ? this.data.inspirations 
+            : this.data.inspirations.filter(i => i.category === filter);
+        
+        container.innerHTML = items.map(item => `
+            <div class="look-item">
+                <div class="look-img" style="background: ${item.color};">${item.emoji}</div>
+                <div class="look-info">
+                    <h4>${item.name}</h4>
+                    <button class="btn-use-style" onclick="app.bookFromInspiration('${item.category}')">
+                        Gunakan Style Ini
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    },
+
+    filterInspiration(category) {
+        document.querySelectorAll('.filter-tabs .tab').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+        this.renderLookbook(category);
+    },
+
+    bookFromInspiration(category) {
+        this.navigate('service-detail', { category });
+        this.showToast('Style dipilih! Pilih layanan selanjutnya');
+    },
+
+    // SERVICE DETAIL
+    renderServiceDetail(category) {
+        const service = this.data.services[category];
+        const hero = document.getElementById('service-hero');
+        const options = document.getElementById('service-options');
+        
+        hero.innerHTML = `
+            <div class="service-icon">${service.icon}</div>
+            <h2>${service.name}</h2>
+            <p>Pilih treatment yang sesuai kebutuhanmu</p>
+        `;
+        
+        options.innerHTML = service.items.map(item => `
+            <div class="service-option" onclick="app.selectService('${category}', '${item.id}')">
+                <h4>${item.name} <span class="price">Rp ${item.price.toLocaleString()}</span></h4>
+                <p class="detail">${item.desc}</p>
+                <div class="meta">
+                    <span><i class="far fa-clock"></i> ${item.duration}</span>
+                    <span><i class="fas fa-star"></i> 4.8</span>
+                </div>
+            </div>
+        `).join('');
+    },
+
+    selectService(category, itemId) {
+        const item = this.data.services[category].items.find(i => i.id === itemId);
+        this.state.selectedService = { category, ...item };
+        document.querySelectorAll('.service-option').forEach(el => el.classList.remove('selected'));
+        event.currentTarget.classList.add('selected');
+        
+        setTimeout(() => this.navigate('location'), 300);
+    },
+
+    // LOCATION
+    selectLocation(type) {
+        this.state.selectedLocation = type;
+        document.querySelectorAll('.location-card').forEach(el => el.classList.remove('selected'));
+        event.currentTarget.classList.add('selected');
+        
+        const addressForm = document.getElementById('address-form');
+        if (type === 'home') {
+            addressForm.classList.remove('hidden');
+        } else {
+            addressForm.classList.add('hidden');
+        }
+    },
+
+    confirmLocation() {
+        if (!this.state.selectedLocation) {
+            this.showToast('Pilih lokasi dulu ya!');
+            return;
+        }
+        if (this.state.selectedLocation === 'home' && !document.getElementById('home-address').value) {
+            this.showToast('Isi alamat rumah dulu!');
+            return;
+        }
+        this.navigate('stylist');
+        this.renderStylistList();
+    },
+
+    // STYLIST
+    renderStylistList(filter = '') {
+        const container = document.getElementById('stylist-list');
+        const stylists = this.data.stylists.filter(s => 
+            s.name.toLowerCase().includes(filter.toLowerCase()) ||
+            s.role.toLowerCase().includes(filter.toLowerCase())
+        );
+        
+        container.innerHTML = stylists.map(s => `
+            <div class="stylist-row" onclick="app.selectStylist(${s.id})">
+                <div class="avatar">${s.avatar}</div>
+                <div class="info">
+                    <h4>${s.name}</h4>
+                    <div class="rating">⭐ ${s.rating} • ${s.exp}</div>
+                    <div class="exp">${s.role}</div>
+                </div>
+                <button class="fav-btn ${this.state.favorites.includes(s.id) ? 'active' : ''}" 
+                    onclick="event.stopPropagation(); app.toggleFavorite(${s.id})">
+                    <i class="fas fa-heart"></i>
+                </button>
+            </div>
+        `).join('');
+    },
+
+    searchStylist(query) {
+        this.renderStylistList(query);
+    },
+
+    selectStylist(id) {
+        this.state.selectedStylist = this.data.stylists.find(s => s.id === id);
+        document.querySelectorAll('.stylist-row').forEach(el => el.classList.remove('selected'));
+        event.currentTarget.classList.add('selected');
+        
+        setTimeout(() => this.navigate('schedule'), 300);
+    },
+
+    toggleFavorite(id) {
+        const idx = this.state.favorites.indexOf(id);
+        if (idx > -1) {
+            this.state.favorites.splice(idx, 1);
+            this.showToast('Dihapus dari favorit');
+        } else {
+            this.state.favorites.push(id);
+            this.showToast('Ditambahkan ke favorit!');
+        }
+        this.renderStylistList();
+        this.renderFavoriteStylists();
+    },
+
+    // SCHEDULE
+    generateDates() {
+        const container = document.getElementById('date-scroll');
+        const days = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+        const today = new Date();
+        
+        let html = '';
+        for (let i = 0; i < 14; i++) {
+            const d = new Date(today);
+            d.setDate(today.getDate() + i);
+            const dayName = i === 0 ? 'Hari Ini' : days[d.getDay()];
+            const dateNum = d.getDate();
+            const month = d.toLocaleString('id', { month: 'short' });
+            
+            html += `
+                <div class="date-item ${i === 0 ? 'selected' : ''}" onclick="app.selectDate(this, '${dateNum} ${month}')">
+                    <div class="day">${dayName}</div>
+                    <div class="date">${dateNum}</div>
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+        this.state.selectedDate = `${today.getDate()} ${today.toLocaleString('id', { month: 'short' })}`;
+    },
+
+    selectDate(el, date) {
+        document.querySelectorAll('.date-item').forEach(d => d.classList.remove('selected'));
+        el.classList.add('selected');
+        this.state.selectedDate = date;
+    },
+
+    generateTimes() {
+        const container = document.getElementById('time-grid');
+        const times = ['09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00', '19:00', '20:00', '21:00'];
+        
+        container.innerHTML = times.map((t, i) => `
+            <button class="time-item ${i === 2 ? 'selected' : ''}" onclick="app.selectTime(this, '${t}')" 
+                ${Math.random() > 0.8 ? 'disabled' : ''}>
+                ${t}
+            </button>
+        `).join('');
+        this.state.selectedTime = '11:00';
+    },
+
+    selectTime(el, time) {
+        if (el.disabled) return;
+        document.querySelectorAll('.time-item').forEach(t => t.classList.remove('selected'));
+        el.classList.add('selected');
+        this.state.selectedTime = time;
+    },
+
+    confirmSchedule() {
+        this.renderConfirmation();
+        this.navigate('confirmation');
+    },
+
+    // CONFIRMATION
+    renderConfirmation() {
+        const locText = this.state.selectedLocation === 'salon' ? 'Ke Salon' : 'Home Service (+Rp 50.000)';
+        const transportFee = this.state.selectedLocation === 'home' ? 50000 : 0;
+        const total = this.state.selectedService.price + transportFee;
+        
+        document.getElementById('conf-service').textContent = this.state.selectedService.name;
+        document.getElementById('conf-stylist').textContent = this.state.selectedStylist.name;
+        document.getElementById('conf-location').textContent = locText;
+        document.getElementById('conf-schedule').textContent = `${this.state.selectedDate}, ${this.state.selectedTime}`;
+        document.getElementById('conf-total').textContent = `Rp ${total.toLocaleString()}`;
+    },
+
+    finalizeBooking() {
+        const transportFee = this.state.selectedLocation === 'home' ? 50000 : 0;
+        const payment = document.querySelector('input[name="payment"]:checked').value;
+        
+        const newBooking = {
+            id: Date.now(),
+            service: this.state.selectedService.name,
+            stylist: this.state.selectedStylist.name,
+            location: this.state.selectedLocation === 'salon' ? 'Ke Salon' : 'Home Service',
+            date: this.state.selectedDate,
+            time: this.state.selectedTime,
+            price: this.state.selectedService.price + transportFee,
+            status: 'waiting'
+        };
+        
+        this.state.bookings.unshift(newBooking);
+        this.renderBookings();
+        
+        const payText = payment === 'now' ? 'Pembayaran online' : 'Bayar di tempat';
+        this.showToast(`Booking berhasil! ${payText}`);
+        this.navigate('bookings');
+    },
+
+    // BOOKINGS
+    renderBookings() {
+        const container = document.getElementById('booking-list');
+        const active = this.state.bookings.filter(b => b.status !== 'done');
+        
+        container.innerHTML = active.map(b => {
+            const statusClass = b.status === 'waiting' ? 'status-waiting' : 'status-ongoing';
+            const statusText = b.status === 'waiting' ? 'Menunggu Konfirmasi' : 'Dalam Perjalanan';
+            
+            return `
+                <div class="booking-card">
+                    <span class="status ${statusClass}">${statusText}</span>
+                    <h4>${b.service}</h4>
+                    <div class="meta"><i class="fas fa-user"></i> ${b.stylist}</div>
+                    <div class="meta"><i class="fas fa-map-marker-alt"></i> ${b.location}</div>
+                    <div class="meta"><i class="fas fa-calendar"></i> ${b.date}, ${b.time}</div>
+                    <div class="price">Rp ${b.price.toLocaleString()}</div>
+                </div>
+            `;
+        }).join('') || '<p style="text-align:center;color:#636E72;padding:40px;">Belum ada booking aktif</p>';
+    },
+
+    filterBookings(type) {
+        document.querySelectorAll('.booking-tabs .tab').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+        
+        const container = document.getElementById('booking-list');
+        const items = type === 'active' 
+            ? this.state.bookings.filter(b => b.status !== 'done')
+            : this.state.bookings.filter(b => b.status === 'done');
+        
+        container.innerHTML = items.map(b => `
+            <div class="booking-card">
+                <span class="status status-done">Selesai</span>
+                <h4>${b.service}</h4>
+                <div class="meta"><i class="fas fa-user"></i> ${b.stylist}</div>
+                <div class="meta"><i class="fas fa-calendar"></i> ${b.date}, ${b.time}</div>
+                <div class="price">Rp ${b.price.toLocaleString()}</div>
+                <button class="btn-review" onclick="app.showReviewModal()">Berikan Review</button>
+            </div>
+        `).join('') || '<p style="text-align:center;color:#636E72;padding:40px;">Belum ada riwayat</p>';
+    },
+
+    // REVIEW
+    showReviewModal() {
+        document.getElementById('review-modal').classList.remove('hidden');
+    },
+
+    setRating(n) {
+        document.querySelectorAll('.star-rating i').forEach((star, i) => {
+            star.classList.toggle('active', i < n);
+            star.classList.toggle('fas', i < n);
+            star.classList.toggle('far', i >= n);
+        });
+    },
+
+    submitReview() {
+        document.getElementById('review-modal').classList.add('hidden');
+        this.showToast('Review berhasil dikirim! Terima kasih 💕');
+    },
+
+    // CHAT
+    handleChatKey(e) {
+        if (e.key === 'Enter') this.sendMessage();
+    },
+
+    sendMessage() {
+        const input = document.getElementById('chat-input');
+        const text = input.value.trim();
+        if (!text) return;
+        
+        const container = document.getElementById('chat-messages');
+        const time = new Date().toLocaleTimeString('id', { hour: '2-digit', minute: '2-digit' });
+        
+        container.innerHTML += `
+            <div class="msg sent">
+                <p>${text}</p>
+                <span class="msg-time">${time}</span>
+            </div>
+        `;
+        
+        input.value = '';
+        container.scrollTop = container.scrollHeight;
+        
+        // Auto reply
+        setTimeout(() => {
+            container.innerHTML += `
+                <div class="msg received">
+                    <p>Baik kak, nanti saya bantu sesuaikan ya! 😊</p>
+                    <span class="msg-time">${time}</span>
+                </div>
+            `;
+            container.scrollTop = container.scrollHeight;
+        }, 1500);
+    },
+
+    // BUNDLE
+    bookBundle(type) {
+        this.showToast('Paket bundling dipilih! Lanjut pilih jadwal');
+        this.state.selectedService = { 
+            name: type === 'lashbrow' ? 'Paket Lash + Brow' : 'Paket Nail + Hair',
+            price: type === 'lashbrow' ? 450000 : 380000
+        };
+        this.navigate('stylist');
+        this.renderStylistList();
+    },
+
+    // UTILS
+    showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.classList.remove('hidden');
+        setTimeout(() => toast.classList.add('hidden'), 3000);
+    },
+
+    showNotification() {
+        this.showToast('2 notifikasi baru!');
+    },
+
+    // PWA
+    setupPWA() {
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            this.state.deferredPrompt = e;
+            setTimeout(() => {
+                document.getElementById('install-prompt').classList.remove('hidden');
+            }, 2000);
+        });
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(() => console.log('SW registered'))
+                .catch(err => console.log('SW error:', err));
+        }
+    },
+
+    installPWA() {
+        if (this.state.deferredPrompt) {
+            this.state.deferredPrompt.prompt();
+            this.state.deferredPrompt.userChoice.then(() => {
+                document.getElementById('install-prompt').classList.add('hidden');
+            });
+        }
+    },
+
+    dismissInstall() {
+        document.getElementById('install-prompt').classList.add('hidden');
+    }
+};
+
+// Init
+document.addEventListener('DOMContentLoaded', () => app.init());

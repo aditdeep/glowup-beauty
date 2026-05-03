@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#FF6B9D">
+    <meta name="description" content="GlowUp Beauty - Booking Layanan Kecantikan">
+    <title>GlowUp Beauty</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3163/3163478.png">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- App Container -->
+    <div id="app">
+        
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-sparkles"></i>
+                    <span>GlowUp</span>
+                </div>
+                <div class="header-actions">
+                    <button class="icon-btn" onclick="app.showNotification()">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge">2</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content" id="main-content">
+            
+            <!-- HOME PAGE -->
+            <section id="page-home" class="page active">
+                <!-- Promo Banner -->
+                <div class="promo-banner" onclick="app.navigate('booking', {service: 'eyelash'})">
+                    <div class="promo-content">
+                        <span class="promo-tag">🔥 Promo Spesial</span>
+                        <h2>Diskon 20%</h2>
+                        <p>Eyelash Extension & Nail Art</p>
+                        <button class="btn-promo">Book Sekarang</button>
+                    </div>
+                    <div class="promo-img">💅</div>
+                </div>
+
+                <!-- Categories -->
+                <div class="section-title">
+                    <h3>Kategori Layanan</h3>
+                </div>
+                <div class="category-grid">
+                    <div class="category-card" onclick="app.navigate('service-detail', {category: 'brow'})">
+                        <div class="cat-icon" style="background: linear-gradient(135deg, #8B4513, #D2691E);">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <span>Brow Bomber</span>
+                    </div>
+                    <div class="category-card" onclick="app.navigate('service-detail', {category: 'eyelash'})">
+                        <div class="cat-icon" style="background: linear-gradient(135deg, #FF6B9D, #C44569);">
+                            <i class="fas fa-mask"></i>
+                        </div>
+                        <span>Eyelash</span>
+                    </div>
+                    <div class="category-card" onclick="app.navigate('service-detail', {category: 'nail'})">
+                        <div class="cat-icon" style="background: linear-gradient(135deg, #F8B500, #F55940);">
+                            <i class="fas fa-hand-sparkles"></i>
+                        </div>
+                        <span>Nail Art</span>
+                    </div>
+                    <div class="category-card" onclick="app.navigate('service-detail', {category: 'hair'})">
+                        <div class="cat-icon" style="background: linear-gradient(135deg, #5F27CD, #341F97);">
+                            <i class="fas fa-cut"></i>
+                        </div>
+                        <span>Hair</span>
+                    </div>
+                </div>
+
+                <!-- Quick Menu -->
+                <div class="quick-menu">
+                    <div class="quick-item" onclick="app.navigate('search')">
+                        <i class="fas fa-search"></i>
+                        <span>Cari</span>
+                    </div>
+                    <div class="quick-item" onclick="app.navigate('inspiration')">
+                        <i class="fas fa-lightbulb"></i>
+                        <span>Inspirasi</span>
+                    </div>
+                    <div class="quick-item" onclick="app.navigate('bookings')">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Booking</span>
+                    </div>
+                </div>
+
+                <!-- Smart Recommendations -->
+                <div class="section-title">
+                    <h3>Rekomendasi Untukmu</h3>
+                    <span class="badge-ai"><i class="fas fa-magic"></i> AI</span>
+                </div>
+                <div class="recommendation-list" id="recommendations">
+                    <!-- Generated by JS -->
+                </div>
+
+                <!-- Favorite Stylists -->
+                <div class="section-title">
+                    <h3>Stylist Favorit</h3>
+                </div>
+                <div class="stylist-scroll" id="favorite-stylists">
+                    <!-- Generated by JS -->
+                </div>
+
+                <!-- Bundling Packages -->
+                <div class="section-title">
+                    <h3>Paket Bundling</h3>
+                </div>
+                <div class="bundle-list">
+                    <div class="bundle-card" onclick="app.bookBundle('lashbrow')">
+                        <div class="bundle-badge">Hemat 15%</div>
+                        <h4>Lash + Brow</h4>
+                        <p class="bundle-price">Rp 450.000 <span>Rp 530.000</span></p>
+                        <button class="btn-bundle">Pilih Paket</button>
+                    </div>
+                    <div class="bundle-card" onclick="app.bookBundle('nailhair')">
+                        <div class="bundle-badge">Hemat 20%</div>
+                        <h4>Nail + Hair</h4>
+                        <p class="bundle-price">Rp 380.000 <span>Rp 475.000</span></p>
+                        <button class="btn-bundle">Pilih Paket</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- INSPIRATION / LOOKBOOK PAGE -->
+            <section id="page-inspiration" class="page">
+                <div class="page-header">
+                    <h2><i class="fas fa-fire"></i> Inspirasi Style</h2>
+                    <p>Temukan gaya favoritmu & book langsung!</p>
+                </div>
+                <div class="filter-tabs">
+                    <button class="tab active" onclick="app.filterInspiration('all')">Semua</button>
+                    <button class="tab" onclick="app.filterInspiration('nail')">Nail Art</button>
+                    <button class="tab" onclick="app.filterInspiration('eyelash')">Eyelash</button>
+                    <button class="tab" onclick="app.filterInspiration('hair')">Hair</button>
+                </div>
+                <div class="lookbook-grid" id="lookbook-grid">
+                    <!-- Generated by JS -->
+                </div>
+            </section>
+
+            <!-- SERVICE DETAIL PAGE -->
+            <section id="page-service-detail" class="page">
+                <div class="back-btn" onclick="app.navigate('home')">
+                    <i class="fas fa-arrow-left"></i>
+                </div>
+                <div class="service-hero" id="service-hero">
+                    <!-- Dynamic -->
+                </div>
+                <div class="service-options" id="service-options">
+                    <!-- Dynamic -->
+                </div>
+            </section>
+
+            <!-- BOOKING FLOW: LOCATION -->
+            <section id="page-location" class="page">
+                <div class="page-header">
+                    <h2>Pilih Lokasi</h2>
+                    <div class="progress-bar">
+                        <div class="progress-step active">1</div>
+                        <div class="progress-line"></div>
+                        <div class="progress-step active">2</div>
+                        <div class="progress-line"></div>
+                        <div class="progress-step">3</div>
+                    </div>
+                </div>
+                <div class="location-options">
+                    <div class="location-card" onclick="app.selectLocation('salon')">
+                        <div class="loc-icon">🏢</div>
+                        <h3>Ke Salon</h3>
+                        <p>Jl. Beauty No. 123, Jakarta</p>
+                        <span class="loc-price">Gratis</span>
+                    </div>
+                    <div class="location-card" onclick="app.selectLocation('home')">
+                        <div class="loc-icon">🏠</div>
+                        <h3>Home Service</h3>
+                        <p>Stylist datang ke rumahmu</p>
+                        <span class="loc-price">+Rp 50.000</span>
+                    </div>
+                </div>
+                <div id="address-form" class="address-form hidden">
+                    <h4>Alamat Pengiriman</h4>
+                    <textarea id="home-address" placeholder="Masukkan alamat lengkap..."></textarea>
+                </div>
+                <button class="btn-primary" onclick="app.confirmLocation()">Lanjut</button>
+            </section>
+
+            <!-- BOOKING FLOW: STYLIST -->
+            <section id="page-stylist" class="page">
+                <div class="page-header">
+                    <h2>Pilih Profesional</h2>
+                    <div class="progress-bar">
+                        <div class="progress-step active">1</div>
+                        <div class="progress-line"></div>
+                        <div class="progress-step active">2</div>
+                        <div class="progress-line"></div>
+                        <div class="progress-step active">3</div>
+                    </div>
+                </div>
+                <div class="stylist-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Cari stylist..." onkeyup="app.searchStylist(this.value)">
+                </div>
+                <div class="stylist-list" id="stylist-list">
+                    <!-- Generated by JS -->
+                </div>
+            </section>
+
+            <!-- BOOKING FLOW: SCHEDULE -->
+            <section id="page-schedule" class="page">
+                <div class="page-header">
+                    <h2>Pilih Jadwal</h2>
+                </div>
+                <div class="calendar-section">
+                    <h4>Pilih Tanggal</h4>
+                    <div class="date-scroll" id="date-scroll">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+                <div class="time-section">
+                    <h4>Pilih Jam</h4>
+                    <div class="time-grid" id="time-grid">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+                <button class="btn-primary" onclick="app.confirmSchedule()">Lanjut ke Konfirmasi</button>
+            </section>
+
+            <!-- CONFIRMATION PAGE -->
+            <section id="page-confirmation" class="page">
+                <div class="page-header">
+                    <h2>Konfirmasi Booking</h2>
+                </div>
+                <div class="confirmation-card">
+                    <div class="conf-item">
+                        <span>Layanan</span>
+                        <strong id="conf-service">-</strong>
+                    </div>
+                    <div class="conf-item">
+                        <span>Stylist</span>
+                        <strong id="conf-stylist">-</strong>
+                    </div>
+                    <div class="conf-item">
+                        <span>Lokasi</span>
+                        <strong id="conf-location">-</strong>
+                    </div>
+                    <div class="conf-item">
+                        <span>Tanggal & Jam</span>
+                        <strong id="conf-schedule">-</strong>
+                    </div>
+                    <div class="conf-divider"></div>
+                    <div class="conf-item total">
+                        <span>Total</span>
+                        <strong id="conf-total">-</strong>
+                    </div>
+                </div>
+                <div class="payment-options">
+                    <h4>Metode Pembayaran</h4>
+                    <label class="payment-card">
+                        <input type="radio" name="payment" value="now" checked>
+                        <div class="pay-content">
+                            <i class="fas fa-credit-card"></i>
+                            <div>
+                                <strong>Bayar Sekarang</strong>
+                                <p>Transfer / E-Wallet</p>
+                            </div>
+                        </div>
+                    </label>
+                    <label class="payment-card">
+                        <input type="radio" name="payment" value="later">
+                        <div class="pay-content">
+                            <i class="fas fa-money-bill-wave"></i>
+                            <div>
+                                <strong>Bayar di Tempat</strong>
+                                <p>Tunai / QRIS di lokasi</p>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+                <button class="btn-primary btn-large" onclick="app.finalizeBooking()">
+                    <i class="fas fa-check-circle"></i> Konfirmasi Booking
+                </button>
+            </section>
+
+            <!-- BOOKING STATUS PAGE -->
+            <section id="page-bookings" class="page">
+                <div class="page-header">
+                    <h2>Status Booking</h2>
+                </div>
+                <div class="booking-tabs">
+                    <button class="tab active" onclick="app.filterBookings('active')">Aktif</button>
+                    <button class="tab" onclick="app.filterBookings('history')">Riwayat</button>
+                </div>
+                <div class="booking-list" id="booking-list">
+                    <!-- Generated by JS -->
+                </div>
+            </section>
+
+            <!-- CHAT PAGE -->
+            <section id="page-chat" class="page">
+                <div class="chat-header">
+                    <div class="chat-user">
+                        <img src="https://i.pravatar.cc/150?img=5" alt="Stylist">
+                        <div>
+                            <h4>Nadia</h4>
+                            <span class="status-online">● Online</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-messages" id="chat-messages">
+                    <div class="msg received">
+                        <p>Halo! Mau konsultasi tentang nail art apa nih? 💅</p>
+                        <span class="msg-time">10:30</span>
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="chat-input" placeholder="Ketik pesan..." onkeypress="app.handleChatKey(event)">
+                    <button onclick="app.sendMessage()"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </section>
+
+            <!-- PROFILE PAGE -->
+            <section id="page-profile" class="page">
+                <div class="profile-header">
+                    <div class="profile-avatar">👩</div>
+                    <h3>Beauty Queen</h3>
+                    <p>Member since 2024</p>
+                </div>
+                <div class="profile-menu">
+                    <div class="prof-item" onclick="app.navigate('bookings')">
+                        <i class="fas fa-calendar"></i>
+                        <span>Riwayat Booking</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                    <div class="prof-item">
+                        <i class="fas fa-heart"></i>
+                        <span>Stylist Favorit</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                    <div class="prof-item">
+                        <i class="fas fa-star"></i>
+                        <span>Review Saya</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                    <div class="prof-item">
+                        <i class="fas fa-cog"></i>
+                        <span>Pengaturan</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+            </section>
+
+            <!-- REVIEW MODAL -->
+            <div id="review-modal" class="modal hidden">
+                <div class="modal-content">
+                    <h3>Berikan Review</h3>
+                    <div class="star-rating">
+                        <i class="far fa-star" onclick="app.setRating(1)"></i>
+                        <i class="far fa-star" onclick="app.setRating(2)"></i>
+                        <i class="far fa-star" onclick="app.setRating(3)"></i>
+                        <i class="far fa-star" onclick="app.setRating(4)"></i>
+                        <i class="far fa-star" onclick="app.setRating(5)"></i>
+                    </div>
+                    <textarea placeholder="Ceritakan pengalamanmu..."></textarea>
+                    <button class="btn-primary" onclick="app.submitReview()">Kirim Review</button>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" onclick="app.navigate('home')">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </button>
+            <button class="nav-item" onclick="app.navigate('inspiration')">
+                <i class="fas fa-fire"></i>
+                <span>Inspirasi</span>
+            </button>
+            <button class="nav-item nav-main" onclick="app.navigate('service-detail', {category: 'nail'})">
+                <i class="fas fa-plus"></i>
+            </button>
+            <button class="nav-item" onclick="app.navigate('chat')">
+                <i class="fas fa-comment-dots"></i>
+                <span>Chat</span>
+            </button>
+            <button class="nav-item" onclick="app.navigate('profile')">
+                <i class="fas fa-user"></i>
+                <span>Profil</span>
+            </button>
+        </nav>
+
+        <!-- Toast Notification -->
+        <div id="toast" class="toast hidden"></div>
+
+        <!-- Install Prompt -->
+        <div id="install-prompt" class="install-prompt hidden">
+            <div class="install-content">
+                <img src="https://cdn-icons-png.flaticon.com/512/3163/3163478.png" alt="GlowUp">
+                <div>
+                    <strong>Install GlowUp Beauty</strong>
+                    <p>Akses lebih cepat dari home screen</p>
+                </div>
+                <button onclick="app.installPWA()">Install</button>
+                <i class="fas fa-times close-install" onclick="app.dismissInstall()"></i>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
